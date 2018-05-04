@@ -1,0 +1,53 @@
+{% extends 'tagging/dashboard.html' %}
+
+{% block title %}DHL NLP{% endblock %}
+
+{% block main_block %}
+<h1> One World, One Dream! </h1>
+<br><br><br><br><br>
+<font style="color:red" size="5">{{ check_message }}</font>
+<br><br><br>
+<button id="passed" type="button" style="position:relative; bottom:-100px; left:150px; width:100px; height:30px;background:green;font-size:20px" onclick="passedcheck()">通过</button>
+<button id="no_pass" type="button" style="position:relative; bottom:-100px; left:450px; width:100px; height:30px;background:red;font-size:20px" onclick="nopassedcheck()">未通过</button>
+<br><br><br><br>
+<a href="/back_check" style="position:relative; bottom:-100px; left:900px; width:300px; height:0px;"><font size="5">返回检查</font></a>
+<script type="text/javascript">
+
+    function passedcheck(eve) {
+        $.ajax({
+            type: "POST",
+            url: "/passcheck",
+            data: {'checker': '{{ checker }}','examined_person': '{{ tag_person }}' },
+
+            success: function(mes) {
+            console.log(mes);
+
+            if (mes == true)
+                alert("已转移到taged_sentences数据库");
+            else
+                alert("转移到taged_sentences数据库过程中出错，请检查!");
+            },
+        });
+    }
+
+
+    function nopassedcheck(eve) {
+        $.ajax({
+            type: "POST",
+            url: "/no_pass",
+            data: {'checker': '{{ checker }}','examined_person':'{{ tag_person }}' },
+            success: function(mes) {
+            console.log(mes);
+
+            if (mes == true)
+                alert("已设置为重新标注");
+            else
+                alert("设置为重新标注过程中出错，请检查!");
+            },
+        });
+    }
+
+
+
+</script>
+{% endblock %}

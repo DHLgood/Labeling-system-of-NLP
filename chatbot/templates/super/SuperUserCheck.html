@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+{% load staticfiles %}
+
+{% load static %}
+
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../static/icon/favicon.ico">
+      <title>标注系统</title>
+
+    <!-- Bootstrap -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'bootstrap/examples/dashboard/dashboard.css' %}" rel="stylesheet">
+
+      <link href="{% static 'css/style.css' %}" rel="stylesheet">
+      <link href="{% static 'css/init.css' %}" rel="stylesheet">
+    <script src="{% static 'js/ie-emulation-modes-warning.js'%}"></script>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url 'index' %}">DHL</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-header">
+              <li><a href="">Chatbot</a> </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              {% if user.is_authenticated %}
+                  <li><a href="">{{ user.username.capitalize }}</a> </li>
+                <li><a href="{% url 'logout' %}">Logout</a> </li>
+              {% else %}
+                <li><a href="{% url 'login' %}">Login</a> </li>
+              {% endif %}
+              <li><a href="{% url 'about' %}">About</a> </li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+
+    <div class="ltp-wrapper">
+			<div class="ltp-doc-header">
+    			<div class="container" >
+        			<font size="25">标注系统</font>
+        			<p class="lead">检查页面</p>
+
+                    {% if start_check %}
+                        <font style="position:relative; bottom:100px; left:600px; width:300px; height:0px" size="6" >正在检查：</font>
+                        <font style="position:relative; bottom:100px; left:600px; width:300px; height:0px;color:green;" size="7" >
+                            {{ examined_person }}
+                        </font>
+
+                    {% endif %}
+
+    			</div>
+			</div>
+
+
+        {% if start_check %}
+            <div class="container1" >
+				<div class="span10"></div>
+				<div class="tab-content" id="viewContent"></div>
+				<div id="analysisPanel" >
+					<div class="row-fluid keep-margin-top-20px">
+						<div class="page-header" style="margin-left: 120px;font-size: 2.4em">
+							<h1  class="local" >当前模式:<font style="color:green;" id="now_use_model_name">分词</font></h1>
+                            <a id="back_check" style="position:relative; bottom:-30px; left:0px; width:200px; height:50px;" size="20" href="/back_check/">返回检查</a>
+                            <button id="check_result" style="position:relative; bottom:-30px; left:100px; width:200px; height:50px;color:green;" size="17" >检查分析</button>
+
+                            <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+							<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+							<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+							<nav class="navbar navbar-default" role="navigation" style="position:relative; bottom:100px; left:500px; width:10px; height:0px">
+									<select id="model_show" onchange="select_model(this.options[this.options.selectedIndex].value)">
+
+									</select>
+							</nav>
+
+                            <h1  class="local" ><font size="2" style="position:relative; bottom:150px; left:800px; width:10px; height:0px;color:green;">(受检人)数据导出类型:</font></h1>
+							<nav class="navbar navbar-default" role="navigation" style="position:relative; bottom:150px; left:800px; width:10px; height:0px">
+
+									<select id="export_data" name="导出数据" onchange="export_data_type(this.options[this.options.selectedIndex].value)">
+
+									</select>
+							</nav>
+
+						</div>
+					</div>
+
+
+
+					<div class="row-fluid">
+						<div class="analysis-wrapper">
+							<ul id="analysisContent"></ul>
+						</div>
+                        <div id="label-explanation-response-btn" ><font size="4">点击展示标签</font>></div>
+
+						<!--<div id="label-explanation-check-btn" >点击进行检查</div>-->
+					<!--	<div id="label-explanation-send-btn" >检查结果发送</div>-->
+						<div id="label-explanation-panel-one" style="display: none">
+							<div style="display: inline-block;" class="tag_list">
+
+							</div>
+							<div class="btn btn-default btn-xs " style="cursor: pointer ;display: block;margin-top: 10px">关闭</div>
+						</div>
+                        <div><br><br></div>
+						<div id="label-explanation-panel-two" style="display: none;">
+							<div style="display: inline-block;" class="tag_list">
+
+							</div>
+                            <div class="btn btn-default btn-xs " style="cursor: pointer ;display: block;margin-top: 10px">关闭</div>
+						</div>
+					</div>
+					<button type="button" class="btn btn-primary btn-lg  width-control-200" style="margin-left: 187px" id="sendRlt">发送</button>
+					<button type="button" class="btn btn-primary btn-lg  width-control-200" style="display:none;margin-left: 187px" id="send-check-rlt">检查结果发送</button>
+				</div>
+			</div>
+
+
+
+            <script type="text/javascript" src="{% static 'js/draw_sent_view_tag.js' %}"></script>
+            <script type="text/javascript">
+                var tag_type = '分词';
+                MODEL_LIDT_ID = "model_show";
+                EXPORT_DATA = "export_data"
+                MODEL_TAG_LIST_ID_ONE ="label-explanation-panel-one";
+                MODEL_TAG_LIST_ID_TWO ="label-explanation-panel-two";
+                var error_tag_num = 0;
+
+                $(document).ready(function () {
+                    $.ajax({
+                        type: "POST",
+        //               url: "{% url 'ajax_for_tokens_list' %}",
+                        url: "/ajax_for_tokens_list",
+                        data: {'username': '{{ user.username }}','tag_model_name': tag_type,'examined_person': '{{ examined_person }}'},
+                        success: function(tokens_list) {
+                        returnAnalysisRst = tokens_list;
+                        console.log(returnAnalysisRst)
+                        if (returnAnalysisRst == false)
+                            alert("没数据了");
+                        else
+                            initdom(DRAW_PARENT_ID, returnAnalysisRst);
+
+
+
+
+                        },
+                    });
+                    $.ajax({
+                            type: "POST",
+                            url: "/ajax_tag_model_list_get",
+                            data: {'examined_person': '{{ examined_person }}','username': '{{ user.username }}'},
+                            success: function(model_list) {
+                            returnModelRst = model_list;
+                            console.log(returnModelRst)
+                            if (returnModelRst == false)
+                                alert("未加载出标注模式文件，请在model_list文件夹下添加标注模式文件");
+                            else
+                                model_show(MODEL_LIDT_ID, returnModelRst);
+                                export_data(EXPORT_DATA, returnModelRst);
+                            },
+                    });
+
+                });
+
+
+                <!--模式选择的监听-->
+                function export_data_type(v){
+                    data_type=v;
+
+
+                    if (data_type!='请选择标注类型'){
+                        window.location.href="/tagging/export_data_do/?p1="+'{{ examined_person }}'+"&p2="+data_type
+                        }
+
+                    <!--$.ajax({-->
+                        <!--type: "POST",-->
+                        <!--url: "/tagging/export_data_do",-->
+                        <!--data: {'username': '{{ examined_person }}','data_name': data_type},-->
+                        <!--success: function(message) {-->
+                        <!--console.log(message)-->
+                        <!--if (message[0] == false)-->
+                            <!--alert("数据保存失败:"+message[1]);-->
+                        <!--else-->
+                            <!--alert("数据保存成功："+message[1]);-->
+                        <!--}-->
+                    <!--});-->
+                    else
+                        alert('请重新选择')
+
+                }
+
+
+
+
+
+                <!--模式选择的监听-->
+                function select_model(v){
+                    tag_type=v;
+                    document.getElementById("now_use_model_name").innerHTML=tag_type;
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/ajax_for_tokens_list",
+                        data: {'examined_person': '{{ examined_person }}','username': '{{ user.username }}','tag_model_name': tag_type},
+                        success: function(tokens_list) {
+                        returnAnalysisRst = tokens_list;
+                        console.log(returnAnalysisRst)
+                        if (returnAnalysisRst == false)
+                            alert("没数据了");
+                        else
+                            initdom(DRAW_PARENT_ID, returnAnalysisRst);
+                        }
+                    });
+
+                    $.ajax({
+                            type: "POST",
+                            url: "/ajax_tag_model_get",
+                            data: {'examined_person': '{{ examined_person }}','username': '{{ user.username }}','tag_model_name': tag_type},
+                            success: function(tag_list) {
+                            returnModelTagRst = tag_list;
+                            console.log(returnModelTagRst)
+                            if (returnModelTagRst == false)
+                                alert("当前模式没有标签，注意标注模式文件！");
+                            else
+                                model_tag_show(returnModelTagRst);
+                            },
+                    });
+
+
+                }
+
+
+                <!--$(".label-label-primary").on("dragstart", function (event) {-->
+                    <!--event.originalEvent.dataTransfer.setData("Text", event.target.id);-->
+                <!--});-->
+
+
+                $("div.tag_list").delegate("div.label-label-primary","dragstart",function(event){
+                  event.originalEvent.dataTransfer.setData("Text", event.target.id);
+                });
+
+                $(window).on("beforeunload", function(e) {
+                            return "Are you sure you want leave?";
+                          });
+
+
+                //修改检测(标红数量）
+                var red_num=0;
+                var all_num=1;
+                var CheckResult = {};
+
+                //分析检查结果
+                $("#check_result").on('click', function (event){
+                    var CheckResult = {};
+                    CheckResult.red_num=red_num;
+                    CheckResult.tag_model_name=tag_type;
+                    CheckResult.examined_person='{{ examined_person }}';
+                    CheckResult.all_num=all_num;
+                    CheckResult.checker='{{ user.username }}';
+                    CheckResult = JSON.stringify(CheckResult);
+                    $.ajax({
+                            type: "POST",
+                            url: "/check_result",
+                            data: {'CheckResult': CheckResult},
+                            success: function(check_message) {
+                            alert(check_message);
+                            window.location.href="/seen_result_html/"
+
+
+                            },
+                     });
+                });
+
+
+
+                //发送按钮
+                $("#sendRlt").on('click', function (event) {
+                    if(returnAnalysisRst!= false) {
+                        var correct = confirm("是否确认发送（保存）您的标注?");//确认对话框
+                        if (correct) {
+                            var result = [];
+                            var j = 0;
+
+                            //遍历每个句子
+                            $(".well-well-sm").each(function () {
+
+                                var i = 0;
+                                var sendSen = [];
+                                //遍历每个句子的每个词块
+                                $(this).children().each(function () {
+                                    if (this.firstChild.textContent != "") {
+                                        all_num=all_num+2
+                                        var temp = {};
+                                        temp.token = this.firstChild.textContent;
+                                        var r=this.firstChild.style.color;
+                                        if (r=="red"){
+                                            red_num=red_num+1;
+                                        }
+                                        temp.pos = this.lastChild.textContent;
+                                        var rr=this.lastChild.style.color;
+                                        if (rr=="red"){
+                                            red_num=red_num+1;
+                                        }
+                                        sendSen.push(temp);
+                                    }
+                                });
+                                var compSen = {};
+                                compSen.id = returnAnalysisRst[j].id;
+                                compSen.tagged = sendSen;
+                                j++;
+                                result.push(compSen);
+                            });
+
+                            var taggedResult = {};
+                            taggedResult.username = '{{ user.username }}';
+                            taggedResult.sents = result;
+                            console.log(taggedResult);
+                            taggedResult = JSON.stringify(taggedResult)
+
+                            $.ajax({
+                                type: "POST",
+                                <!--url: "{% url 'ajax_for_save_tagged_tokens' %}",-->
+                                url: "/ajax_for_save_tagged_tokens",
+                                data: {'taggedResult': taggedResult,'tag_model_name': tag_type,'examined_person':'{{ examined_person }}' },
+                                success: function(tokens_list) {
+                                returnAnalysisRst = tokens_list;
+
+                                console.log(returnAnalysisRst)
+
+                                if (returnAnalysisRst == false)
+                                    alert("检查完毕！请点击'检查分析'");
+                                else
+                                    initdom(DRAW_PARENT_ID, returnAnalysisRst);
+                                },
+                            });
+                         }
+                     }
+
+                    else {
+
+                        CheckResult.red_num=red_num;
+                        CheckResult.tag_model_name=tag_type;
+                        CheckResult.examined_person='{{ examined_person }}';
+                        CheckResult.all_num=all_num;
+                        CheckResult.checker='{{ user.username }}';
+                        CheckResult = JSON.stringify(CheckResult)
+                        }
+
+
+
+                });
+
+
+                //点击修改词性
+                $("#label-explanation-response-btn").on("click", function () {
+                    console.log("don't touch me")
+                    $("#label-explanation-panel-one").show();
+                    $("#label-explanation-panel-two").show();
+                    $("#label-explanation-response-btn").hide();
+
+                });
+                //关闭按钮
+                $(".btn.btn-default.btn-xs").on("click", function () {
+                    $("#label-explanation-panel-one").hide();
+                    $("#label-explanation-panel-two").hide();
+                    $("#label-explanation-response-btn").show();
+
+                });
+            </script>
+
+
+
+
+
+        {% else  %}
+
+            <div class="show_" >
+                <a id="back_bestribution" style="position:relative; bottom:-70px; left:50px; width:100px; height:30px;" href="/destribution/" ><font size="5" style="color:green;">分配任务</font></a>
+                <br><br><br><br><br><br>
+                <form class="form-horizontal col-xs-4 center-block" role="form" id="check_form" method="post"
+                      action="/SuperUserCheck/" style="margin-left:250px;">
+                    <!--style="position:relative; bottom:-200px; left:380px; width:1250px; height:100px"-->
+                    {% csrf_token %}
+                    <div class="form-group" >
+                        <label class="col-sm-2 control-label">examined person </label>
+                        <div class="col-sm-10" style="width:300px; height:0px" >
+                            <input type="text" class="form-control" name="examined" placeholder="接受检查的人">
+                        </div>
+                        <br><br><br><br><br>
+                        <label class="col-sm-2 control-label">Checked sentences number</label>
+                        <div class="col-sm-10" style="width:300px; height:0px" >
+                            <input type="number" class="form-control" name="examined_sents_num" placeholder="检查句子的数量">
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-default" >Start Check</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        {% endif %}
+
+
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/ie10-viewport-bug-workaround.js' %}"></script>
+
+
+
+  </body>
+</html>
+

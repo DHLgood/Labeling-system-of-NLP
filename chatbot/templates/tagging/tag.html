@@ -1,0 +1,330 @@
+{% extends 'tagging/base.html' %}
+
+{% load staticfiles %}
+
+{% load static %}
+
+{% block title %}
+标注系统
+{% endblock %}
+
+{% block head_css_links_block %}
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+<link href="{% static 'css/init.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block body_block %}
+<div class="ltp-wrapper">
+    <div class="ltp-doc-header">
+        <div class="container">
+            <h1>标注系统</h1>
+
+            <p class="lead">标注系统能为你做些什么</p>
+        </div>
+    </div>
+    <div class="container1">
+        <div class="span10"></div>
+        <div class="tab-content" id="viewContent"></div>
+        <div id="analysisPanel">
+
+            <div class="row-fluid keep-margin-top-20px">
+                <div class="page-header" style="margin-left: 200px;font-size: 2.4em">
+                    <h1 class="local">当前模式:<font style="color:green;" id="now_use_model_name">分词</font></h1>
+                    <link rel="stylesheet"
+                          href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+                    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+                    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+                    <h1 class="local"><font size="4"
+                                            style="position:relative; bottom:70px; left:400px; width:10px; height:0px;color:green;">标注模式:</font>
+                    </h1>
+                    <nav class="navbar navbar-default" role="navigation"
+                         style="position:relative; bottom:70px; left:400px; width:10px; height:0px">
+                        <select id="model_show" onchange="select_model(this.options[this.options.selectedIndex].value)">
+
+                        </select>
+                    </nav>
+                    <h1 class="local"><font size="2"
+                                            style="position:relative; bottom:200px; left:800px; width:10px; height:0px;color:green;">数据导出类型:</font>
+                    </h1>
+                    <nav class="navbar navbar-default" role="navigation"
+                         style="position:relative; bottom:200px; left:800px; width:10px; height:0px">
+
+                        <select id="export_data" name="导出数据"
+                                onchange="export_data_type(this.options[this.options.selectedIndex].value)">
+
+
+                        </select>
+                    </nav>
+
+
+                </div>
+            </div>
+
+
+            <div class="row-fluid">
+                <div class="analysis-wrapper">
+                    <ul id="analysisContent"></ul>
+                </div>
+                <div id="label-explanation-response-btn">点击展示标签</div>
+
+                <!--<div id="label-explanation-check-btn" >点击进行检查</div>-->
+                <!--	<div id="label-explanation-send-btn" >检查结果发送</div>-->
+                <div id="label-explanation-panel-one" style="display: none">
+                    <div style="display: inline-block" class="tag_list">
+
+                    </div>
+                    <div class="btn btn-default btn-xs " style="cursor: pointer ;display: block;margin-top: 10px">关闭
+                    </div>
+                </div>
+
+                <div id="label-explanation-panel-two" style="display: none">
+                    <div style="display: inline-block" class="tag_list">
+
+                    </div>
+                    <div class="btn btn-default btn-xs " style="cursor: pointer ;display: block;margin-top: 10px">关闭
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-lg  width-control-200" style="margin-left: 187px"
+                    id="sendRlt">发送
+            </button>
+            <button type="button" class="btn btn-primary btn-lg  width-control-200"
+                    style="display:none;margin-left: 187px" id="send-check-rlt">检查结果发送
+            </button>
+
+        </div>
+
+    </div>
+
+
+</div>
+{% endblock %}
+
+
+{% block body_script_block %}
+
+<script src="{% static 'layer/layer.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/draw_sent_view_tag.js' %}"></script>
+
+<script type="text/javascript">
+    var tag_type = '分词';
+    MODEL_LIDT_ID = "model_show";
+    EXPORT_DATA = "export_data"
+    MODEL_TAG_LIST_ID_ONE = "label-explanation-panel-one";
+    MODEL_TAG_LIST_ID_TWO = "label-explanation-panel-two";
+
+    $(document).ready(function () {
+        $.ajax({
+            type: "POST",
+//               url: "{% url 'ajax_for_tokens_list' %}",
+            url: "/tagging/ajax_for_tokens_list",
+            data: {'username': '{{ user.username }}', 'tag_model_name': tag_type},
+            success: function (tokens_list) {
+                returnAnalysisRst = tokens_list;
+                console.log(returnAnalysisRst)
+                if (returnAnalysisRst == false)
+                    alert("没数据了");
+                else
+                    initdom(DRAW_PARENT_ID, returnAnalysisRst);
+
+
+            },
+        });
+        $.ajax({
+            type: "POST",
+            url: "/tagging/ajax_tag_model_list_get",
+            data: {'username': '{{ user.username }}'},
+            success: function (model_list) {
+                returnModelRst = model_list;
+                console.log(returnModelRst)
+                if (returnModelRst == false)
+                    alert("未加载出标注模式文件，请在model_list文件夹下添加标注模式文件");
+                else
+                    model_show(MODEL_LIDT_ID, returnModelRst);
+                export_data(EXPORT_DATA, returnModelRst);
+            },
+        });
+
+    });
+
+
+    <!--模式选择的监听-->
+    function export_data_type(v) {
+        data_type = v;
+        window.location.href = "/tagging/export_data_do/?p1=" + '{{ user.username }}' + "&p2=" + data_type
+
+                < !--$.ajax({-- >
+                        < !--type
+    :
+        "POST", -- >
+        < !--url
+    :
+        "/tagging/export_data_do", -- >
+        < !--data
+    :
+        {
+            'username'
+        :
+            '{{ user.username }}', 'data_name'
+        :
+            data_type
+        }
+    ,
+        -- >
+        < !--success
+    :
+        function (message) {
+            -- >
+            < !--console.log(message)-- >
+            < !--
+            if (message[0] == false)-- >
+            < !--alert("数据保存失败:" + message[1]);
+            -- >
+            < !--
+        else
+            -- >
+            < !--alert("数据保存成功：" + message[1]);
+            -- >
+            < !--
+        }
+
+        -- >
+        < !--
+    })
+        ;
+        -- >
+
+    }
+
+
+    <!--模式选择的监听-->
+    function select_model(v) {
+        tag_type = v;
+        document.getElementById("now_use_model_name").innerHTML = tag_type;
+
+        $.ajax({
+            type: "POST",
+            url: "/tagging/ajax_for_tokens_list",
+            data: {'username': '{{ user.username }}', 'tag_model_name': tag_type},
+            success: function (tokens_list) {
+                returnAnalysisRst = tokens_list;
+                console.log(returnAnalysisRst)
+                if (returnAnalysisRst == false)
+                    alert("没数据了");
+                else
+                    initdom(DRAW_PARENT_ID, returnAnalysisRst);
+            }
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "/tagging/ajax_tag_model_get",
+            data: {'username': '{{ user.username }}', 'tag_model_name': tag_type},
+            success: function (tag_list) {
+                returnModelTagRst = tag_list;
+                console.log(returnModelTagRst)
+                if (returnModelTagRst == false)
+                    alert("当前模式没有标签，注意标注模式文件！");
+                else
+                    model_tag_show(returnModelTagRst);
+            },
+        });
+
+
+    }
+
+
+    <!--$(".label-label-primary").on("dragstart", function (event) {-->
+    <!--event.originalEvent.dataTransfer.setData("Text", event.target.id);-->
+    <!--});-->
+
+
+    $("div.tag_list").delegate("div.label-label-primary", "dragstart", function (event) {
+        event.originalEvent.dataTransfer.setData("Text", event.target.id);
+    });
+
+    $(window).on("beforeunload", function (e) {
+        return "Are you sure you want leave?";
+    });
+
+
+    //发送按钮
+    $("#sendRlt").on('click', function (event) {
+        if (returnAnalysisRst != false) {
+            var correct = confirm("是否确认发送（保存）您的标注?");//确认对话框
+            if (correct) {
+                var result = [];
+                var j = 0;
+                //遍历每个句子
+                $(".well-well-sm").each(function () {
+
+                    var i = 0;
+                    var sendSen = [];
+                    //遍历每个句子的每个词块
+                    $(this).children().each(function () {
+                        if (this.firstChild.textContent != "") {
+                            var temp = {};
+                            temp.token = this.firstChild.textContent;
+                            temp.pos = this.lastChild.textContent;
+                            sendSen.push(temp);
+                        }
+                    });
+                    var compSen = {};
+                    compSen.id = returnAnalysisRst[j].id;
+                    compSen.tagged = sendSen;
+                    j++;
+                    result.push(compSen);
+                });
+
+                var taggedResult = {};
+                taggedResult.username = '{{ user.username }}';
+                taggedResult.sents = result;
+                console.log(taggedResult);
+                taggedResult = JSON.stringify(taggedResult)
+                $.ajax({
+                    type: "POST",
+                    <!--url: "{% url 'ajax_for_save_tagged_tokens' %}",-->
+                    url: "/tagging/ajax_for_save_tagged_tokens",
+                    data: {'taggedResult': taggedResult, 'tag_model_name': tag_type},
+                    success: function (tokens_list) {
+                        returnAnalysisRst = tokens_list;
+
+                        console.log(returnAnalysisRst)
+
+                        if (returnAnalysisRst == false)
+                            alert("没数据了");
+                        else
+                            initdom(DRAW_PARENT_ID, returnAnalysisRst);
+                    },
+                });
+
+            }
+        }
+        <!--else-->
+        <!--{-->
+        <!--alert("请仔细再检查下！");-->
+        <!--}-->
+
+
+    });
+
+
+    //点击修改词性
+    $("#label-explanation-response-btn").on("click", function () {
+        console.log("don't touch me")
+        $("#label-explanation-panel-one").show();
+        $("#label-explanation-panel-two").show();
+        $("#label-explanation-response-btn").hide();
+
+    });
+    //关闭按钮
+    $(".btn.btn-default.btn-xs").on("click", function () {
+        $("#label-explanation-panel-one").hide();
+        $("#label-explanation-panel-two").hide();
+        $("#label-explanation-response-btn").show();
+
+    });
+</script>
+{% endblock %}
+

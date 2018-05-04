@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{% static 'icon/favicon.ico' %}">
+
+    <title>DHL NLP</title>
+
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'bootstrap/examples/dashboard/dashboard.css' %}" rel="stylesheet">
+    <h1 style="margin-left: 520px;color:green;"> One World, One Dream! </h1>
+    <hi style="margin-left: 620px">Distribution with Tagging</hi>
+</head>
+<body>
+     <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url 'index' %}">DHL</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-header">
+              <li><a href="">Chatbot</a> </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              {% if user.is_authenticated %}
+                  <li><a>{{ user.username.capitalize }}</a> </li>
+                <li><a href="{% url 'logout' %}">Logout</a> </li>
+              {% else %}
+                <li><a href="{% url 'login' %}">Login</a> </li>
+              {% endif %}
+              <li><a href="{% url 'about' %}">About</a> </li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="">Chatbot</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="">Tagging</a> </li>
+                <li><a href="/SuperUserCheck/">Check</a> </li>
+                 <li><a href="">清屏</a> </li>
+                <br>
+                <br>
+                <br>
+                <li><a><font style="position:relative; bottom:0px; left:80px; width:10px; height:0px;color:green;">导出数据选择</font></a></li>
+                <br>
+                <li>
+                    <nav class="navbar navbar-default" role="navigation" style="position:relative; bottom:0px; left:10px; width:10px; height:0px">
+
+									<select id="export_data_source" name="导出数据" onchange="export_data_source_do(this.options[this.options.selectedIndex].value)">
+									</select>
+                    </nav>
+
+                    <nav class="navbar navbar-default" role="navigation" style="position:relative; bottom:70px; left:140px; width:10px; height:0px">
+
+									<select id="export_data_tag_type" name="导出数据" onchange="export_data_tag_type_do(this.options[this.options.selectedIndex].value)">
+
+									</select>
+                    </nav>
+                </li>
+                <br>
+                <br>
+                <li>
+                    <button type="button" class="btn btn-primary btn-lg  width-control-200"  id="que_ren_dao_chu" style="position:relative; bottom:00px; left:110px; width:70px; height:50px;">导出</button>
+                </li>
+                <!--<li><a href="SuperUserCheck/">SuperUserCheck</a>-->
+            </ul>
+            {% block side_block %}{% endblock %}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% if destribution_message %}
+                <div class="show" style="position:absolute; bottom:20px; left:620px; width:700px; height:450px">
+                    <font  style="color:red;" size="7">{{ task_executor }} </font>
+                    <font style="color:red;"  size="5">{{ destribution_message }}</font>
+                </div>
+            {% endif %}
+
+            {% if destribution_if %}
+                <script type="text/javascript">
+                    alert("任务分配完毕!");
+                </script>
+            {% endif %}
+            <div class="show" style="margin-left: 0px">
+                <form class="form-horizontal col-xs-4 center-block" role="form" id="distribution_form" method="post"
+                      action="/destribution/">
+                    {% csrf_token %}
+                    <div class="form-group" >
+                        <label class="col-sm-2 control-label">Executor</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="executor" placeholder="执行者">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Label type</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="labeltype" placeholder="标注类型">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Mission Volume Start</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" name="missionvolumestart" placeholder="任务起始id">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Mission Volume End</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" name="missionvolumeend" placeholder="任务结束id">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-default" >Distribution</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!--<div class="show_" style="position:absolute; bottom:-100px; left:20px; width:1300px; height:50px">-->
+                <!--<form class="form-horizontal col-xs-4 center-block" role="form" id="check_form" method="post"-->
+                      <!--action="/SuperUserCheck/">-->
+                    <!--{% csrf_token %}-->
+                    <!--<div class="form-group" >-->
+                        <!--<label class="col-sm-2 control-label">examined person </label>-->
+                        <!--<div class="col-sm-10">-->
+                            <!--<input type="text" class="form-control" name="examined" placeholder="接受检查的人">-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<br>-->
+                    <!--<div class="form-group">-->
+                        <!--<div class="col-sm-offset-2 col-sm-10">-->
+                            <!--<button type="submit" class="btn btn-default" href="/SuperUserCheck/" >Check</button>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</form>-->
+            <!--</div>-->
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="{% static 'js/ie10-viewport-bug-workaround.js' %}"></script>
+
+    {% block body_script_block %}{% endblock %}
+    <!--<script>-->
+        <!--$(window).on("beforeunload", function(e) {-->
+            <!--return "Are you sure you want leave?";-->
+          <!--});-->
+    <!--</script>-->
+
+
+
+
+
+
+
+<script src="{% static 'layer/layer.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/draw_sent_view_tag.js' %}"></script>
+
+<script type="text/javascript">
+
+     var data_source_selected;
+     var data_tag_type_selected;
+        EXPORT_DATA_SOURCE="export_data_source";
+        EXPORT_DATA_TAG_TYPE="export_data_tag_type";
+
+
+        $(document).ready(function () {
+
+        	$.ajax({
+					type: "POST",
+					url: "/tagging/ajax_tag_model_list_get",
+					data: {'username': '{{ user.username }}'},
+					success: function(model_list) {
+					returnModelRst = model_list;
+					console.log(returnModelRst)
+					if (returnModelRst == false)
+						alert("未加载出标注模式文件，请在model_list文件夹下添加标注模式文件");
+					else
+						super_export_data(EXPORT_DATA_TAG_TYPE, returnModelRst);
+					},
+        	});
+
+
+        	$.ajax({
+					type: "POST",
+					url: "/all_data_source",
+					data: {'username': '{{ user.username }}'},
+					success: function(data_source_list) {
+					console.log(data_source_list)
+
+					if (data_source_list == false)
+						alert("数据来源异常");
+					else
+						super_data_source_show(EXPORT_DATA_SOURCE, data_source_list);
+					},
+        	});
+
+        });
+
+
+        function export_data_tag_type_do(s){
+
+			data_tag_type_selected=s;
+		}
+		function export_data_source_do(t){
+			data_source_selected=t;
+
+
+		}
+
+
+
+		$("#que_ren_dao_chu").on('click', function (event) {
+		    if (data_source_selected && data_tag_type_selected)
+                {
+                    window.location.href="/export_data_from_database/?p1="+data_source_selected+"&p2="+data_tag_type_selected
+
+                    <!--$.ajax({-->
+                            <!--type: "POST",-->
+                            <!--url: "/export_data_from_database",-->
+                            <!--data: {'data_source_selected': data_source_selected,'data_tag_type_selected': data_tag_type_selected},-->
+                            <!--success: function(tokens_list) {-->
+                            <!--mes = tokens_list;-->
+                            <!--console.log(mes)-->
+                            <!--if (mes[0] == false)-->
+                                <!--alert("导入失败");-->
+                            <!--else-->
+                                <!--alert("数据保存成功："+mes[1]);-->
+                            <!--}-->
+                        <!--});-->
+                }
+            else
+                alert('请重新选择两项内容')
+		});
+
+
+
+
+
+
+</script>
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

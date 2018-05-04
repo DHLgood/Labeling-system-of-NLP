@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>菜鸟教程(runoob.com)</title>
+</head>
+<body>
+
+<p>该实例演示了如何使用 addEventListener() 方法向 body 元素添加 "onbeforeunload" 事件。</p>
+<p>关闭当前窗口，按下 F5 或点击以下链接触发 onbeforeunload 事件。</p>
+<a href="http://www.runoob.com">点击调整到菜鸟教程</a>
+<script>
+window.addEventListener("beforeunload", function(event) {
+    event.returnValue = "我在这写点东西...";
+});
+</script>
+
+</body>
+</html>

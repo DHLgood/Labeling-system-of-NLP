@@ -1,0 +1,42 @@
+{% extends 'tagging/base.html' %}
+
+{% load staticfiles %}
+
+{% block title %}Login{% endblock %}
+
+{% block head_css_links_block %}
+    <link href="{% static 'css/login.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block body_block %}
+
+    <div class="container">
+        <form class="form-signin" role="form" id="login_form" method="post" action="/superlogin/">
+            <h2 class="form-signin-heading">Please login</h2>
+            {% csrf_token %}
+            <div class="form-group">
+                    <input type="text" class="form-control" name="username" placeholder="Username">
+            </div>
+            <div class="form-group">
+                    <input type="password" class="form-control" name="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"> Remember me
+                        </label>
+                    </div>
+            </div>
+            <div class="form-group">
+                    <button type="submit" class="btn btn-lg btn-primary btn-block">Login</button>
+            </div>
+
+        </form>
+        <div class="login_message">
+            <br><br><br><br>
+            <font style="color:red;margin-left: 400px" size="4">{{ login_message }}</font>
+        </div>
+    </div>
+
+
+{% endblock %}
